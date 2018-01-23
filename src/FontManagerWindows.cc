@@ -134,6 +134,7 @@ FontDescriptor *resultFromFont(IDWriteFont *font) {
         (FontWeight) font->GetWeight(),
         (FontWidth) font->GetStretch(),
         font->GetStyle() == DWRITE_FONT_STYLE_ITALIC,
+        font->GetStyle() == DWRITE_FONT_STYLE_OBLIQUE,
         monospace
       );
 
@@ -252,7 +253,9 @@ FontDescriptor *findFont(FontDescriptor *desc) {
 
     FontDescriptor *fallback = new FontDescriptor(
       NULL, NULL, NULL, NULL, 
-      desc->weight, desc->width, desc->italic, false
+      desc->weight, desc->width, 
+      desc->italic, desc->oblique, 
+      false
     );
 
     fonts = findFonts(fallback);

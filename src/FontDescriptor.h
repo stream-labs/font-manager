@@ -44,6 +44,7 @@ public:
   FontWeight weight;
   FontWidth width;
   bool italic;
+  bool oblique;
   bool monospace;
   
   FontDescriptor(Local<Object> obj) {
@@ -54,6 +55,7 @@ public:
     weight = (FontWeight) getNumber(obj, "weight");
     width = (FontWidth) getNumber(obj, "width");
     italic = getBool(obj, "italic");
+    oblique = getBool(obj, "oblique");
     monospace = getBool(obj, "monospace");
   }
 
@@ -65,11 +67,12 @@ public:
     weight = FontWeightUndefined;
     width = FontWidthUndefined;
     italic = false;
+    oblique = false;
     monospace = false;
   }
   
   FontDescriptor(const char *path, const char *postscriptName, const char *family, const char *style, 
-                 FontWeight weight, FontWidth width, bool italic, bool monospace) {
+                 FontWeight weight, FontWidth width, bool italic, bool oblique, bool monospace) {
     this->path = copyString(path);
     this->postscriptName = copyString(postscriptName);
     this->family = copyString(family);
@@ -77,6 +80,7 @@ public:
     this->weight = weight;
     this->width = width;
     this->italic = italic;
+    this->oblique = oblique;
     this->monospace = monospace;
   }
 
@@ -88,6 +92,7 @@ public:
     weight = desc->weight;
     width = desc->width;
     italic = desc->italic;
+    oblique = desc->oblique;
     monospace = desc->monospace;
   }
   
@@ -119,6 +124,7 @@ public:
     res->Set(Nan::New<String>("weight").ToLocalChecked(), Nan::New<Number>(weight));
     res->Set(Nan::New<String>("width").ToLocalChecked(), Nan::New<Number>(width));
     res->Set(Nan::New<String>("italic").ToLocalChecked(), Nan::New<v8::Boolean>(italic));
+    res->Set(Nan::New<String>("oblique").ToLocalChecked(), Nan::New<v8::Boolean>(oblique));
     res->Set(Nan::New<String>("monospace").ToLocalChecked(), Nan::New<v8::Boolean>(monospace));
     return scope.Escape(res);
   }
