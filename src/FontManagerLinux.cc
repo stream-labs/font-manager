@@ -123,6 +123,7 @@ FontDescriptor *createFontDescriptor(FcPattern *pattern) {
     convertWeight(weight),
     convertWidth(width),
     slant == FC_SLANT_ITALIC,
+    slant == FC_SLANT_OBLIQUE,
     spacing == FC_MONO
   );
 }
@@ -146,7 +147,7 @@ ResultSet *getAvailableFonts() {
   FcObjectSet *os = FcObjectSetBuild(FC_FILE, FC_POSTSCRIPT_NAME, FC_FAMILY, FC_STYLE, FC_WEIGHT, FC_WIDTH, FC_SLANT, FC_SPACING, NULL);
   FcFontSet *fs = FcFontList(NULL, pattern, os);
   ResultSet *res = getResultSet(fs);
-  
+
   FcPatternDestroy(pattern);
   FcObjectSetDestroy(os);
   FcFontSetDestroy(fs);
