@@ -1,20 +1,46 @@
-os: Windows Server 2012
 environment:
-  VisualStudioVersion: 11.0
   matrix:
-    - nodejs_version: "6"
-    - nodejs_version: "8"
-    - nodejs_version: "10"
+    - RuntimeURL: https://atom.io/download/atom-shell
+      RuntimeName: iojs
+      RuntimeVersion: v2.0.5
+
+    - RuntimeURL: https://atom.io/download/atom-shell
+      RuntimeName: iojs
+      RuntimeVersion: v1.7.15
+
+  NodeVersion: 9
+  BuildDirectory: build
+  Generator: Visual Studio 14 2015 Win64
+  DistributeDirectory: distribute
+  FullDistributePath: $(SLBuildDirectory)\$(SLDistributeDirectory)
+  DistributionAritfact: $(RuntimeName)-$(RuntimeVersion)-font-manager
+  Arch: x64
 
 install:
-  - ps: Update-NodeJsInstallation (Get-NodeJsLatestBuild $env:nodejs_version)
-  - npm install
+  - ps: Install-Product node $env:NodeVersion
+  - yarn install
 
-test_script:
-  - node --version
-  - npm --version
-  - ps: "npm test # PowerShell" # Pass comment to PS for easier debugging
-  - cmd: npm test
+build_script:
+  - cmake -H. -B"%BuildDirectory%" -G"%Generator%"  -DCMAKE_INSTALL_PREFIX="%FullDistributePath%\font-manager" -DNODEJS_NAME=%RuntimeName% -DNODEJS_URL=%RuntimeURL% -DNODEJS_VERSION=%RuntimeVersion%
+  - cmake --build %BuildDirectory% --target install --config RelWithDebInfo
+  - tar cvaf "%DistributionAritfact%.tar.gz" -C "%FullDistributePath%" "font-manager"
 
-build: off
-version: "{build}"
+before_deploy:
+  - ps: Push-AppveyorArtifact "$env:DistributionAritfact.tar.gz"
+
+deploy:
+  - provider: GitHub
+    artifact: $(DistributionAritfact).tar.gz
+    auth_token:
+      secure: nP2TonQxdUNyL65bmBKVPi0/jYX3h6mPCdFgJs1WeD+kNhgoUJ4mqxZ2FWkjpE0N
+    draft: false
+    prerelease: false
+    force_update: true
+    on:
+      appveyor_repo_tag: true
+
+artifacts:
+  - path: $(DistributionAritfact).tar.gz
+    name: Distribution Aritfact
+
+test: off
