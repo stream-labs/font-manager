@@ -221,4 +221,4 @@ NAN_MODULE_INIT(Init) {
   Nan::Export(target, "substituteFontSync", substituteFont<false>);
 }
 
-NODE_MODULE(fontmanager, Init)
+NODE_MODULE(node_fontmanager, Init)
