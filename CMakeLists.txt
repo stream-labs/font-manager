@@ -28,6 +28,7 @@ if(WIN32)
 
 	target_compile_definitions(node_fontmanager
 		PRIVATE -D_CRT_SECURE_NO_WARNINGS)
+	target_compile_definitions(node_fontmanager PRIVATE -DUNICODE -D_UNICODE)
 elseif(APPLE)
 	target_sources(node_fontmanager
 		PUBLIC ${node_fontmanager_SOURCE_DIR}/src/FontManagerMac.mm)
