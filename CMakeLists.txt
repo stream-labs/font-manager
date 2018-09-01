@@ -20,7 +20,7 @@ set(node_fontmanager_EXTRAS
 	${node_fontmanager_SOURCE_DIR}/main.js
 	${node_fontmanager_SOURCE_DIR}/package.json)
 
-if(CMAKE_HOST_WIN32)
+if(WIN32)
 	target_sources(node_fontmanager
 		PUBLIC ${node_fontmanager_SOURCE_DIR}/src/FontManagerWindows.cc)
 
@@ -28,14 +28,14 @@ if(CMAKE_HOST_WIN32)
 
 	target_compile_definitions(node_fontmanager
 		PRIVATE -D_CRT_SECURE_NO_WARNINGS)
-elseif(CMAKE_HOST_APPLE)
+elseif(APPLE)
 	target_sources(node_fontmanager
 		PUBLIC ${node_fontmanager_SOURCE_DIR}/src/FontManagerMac.mm)
 
 	target_link_libraries(node_fontmanager
 		CoreText.framework
 		Foundation.framework)
-elseif(CMAKE_HOST_UNIX)
+elseif(UNIX)
 	target_sources(node_fontmanager
 		PUBLIC ${node_fontmanager_SOURCE_DIR}/src/FontManagerLinux.mm)
 
