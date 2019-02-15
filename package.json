@@ -1,10 +1,10 @@
 {
   "name": "font-manager",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "Provides access to the system font catalog",
   "main": "main.js",
   "devDependencies": {
-    "nan": "2.10.0",
+    "nan": "2.12.1",
     "mocha": "*"
   },
   "keywords": [
