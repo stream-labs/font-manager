@@ -1,24 +1,11 @@
 {
   "name": "font-manager",
-  "version": "0.3.0",
+  "version": "1.0.6",
   "description": "Provides access to the system font catalog",
-  "main": "build/Release/fontmanager",
-  "dependencies": {
-    "nan": "2.10.0"
-  },
+  "main": "main.js",
   "devDependencies": {
+    "nan": "2.12.1",
     "mocha": "*"
-  },
-  "directories": {
-    "test": "test"
-  },
-  "scripts": {
-    "test": "mocha",
-    "install": "node-gyp rebuild"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/devongovett/font-manager.git"
   },
   "keywords": [
     "font",
@@ -27,11 +14,5 @@
     "substitute",
     "enumerate"
   ],
-  "author": "Devon Govett <devongovett@gmail.com>",
-  "license": "MIT",
-  "gypfile": true,
-  "bugs": {
-    "url": "https://github.com/devongovett/font-manager/issues"
-  },
-  "homepage": "https://github.com/devongovett/font-manager"
+  "license": "MIT"
 }
