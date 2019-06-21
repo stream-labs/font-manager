@@ -11,7 +11,7 @@ workspace:
 
 strategy:
   matrix:
-    Electron2:
+    Electron5:
       RuntimeURL: https://atom.io/download/atom-shell
       RuntimeName: iojs
       RuntimeVersion: v5.0.4
