@@ -34,6 +34,21 @@ if(WIN32)
 	target_compile_definitions(node_fontmanager
 		PRIVATE -D_CRT_SECURE_NO_WARNINGS)
 	target_compile_definitions(node_fontmanager PRIVATE -DUNICODE -D_UNICODE)
+
+	set(CompilerFlags
+        CMAKE_CXX_FLAGS
+        CMAKE_CXX_FLAGS_DEBUG
+        CMAKE_CXX_FLAGS_RELEASE
+		CMAKE_CXX_FLAGS_RELWITHDEBINFO
+        CMAKE_C_FLAGS
+        CMAKE_C_FLAGS_DEBUG
+        CMAKE_C_FLAGS_RELEASE
+		CMAKE_C_FLAGS_RELWITHDEBINFO
+        )
+
+	foreach(CompilerFlag ${CompilerFlags})
+	  string(REPLACE "/MD" "/MT" ${CompilerFlag} "${${CompilerFlag}}")
+	endforeach()
 elseif(APPLE)
 	target_sources(node_fontmanager
 		PUBLIC ${node_fontmanager_SOURCE_DIR}/src/FontManagerMac.mm)
