@@ -103,7 +103,7 @@ jobs:
   - task: PublishBuildArtifacts@1
     displayName: 'Publish build artifact'
     inputs: 
-      pathtoPublish: $(Build.SourcesDirectory)\$(DistributionAritfact)-osx.tar.gz
+      pathtoPublish: $(Build.SourcesDirectory)/$(DistributionAritfact)-osx.tar.gz
       artifactName: $(DistributionAritfact)-osx.tar.gz
 
   - task: GithubRelease@0 
