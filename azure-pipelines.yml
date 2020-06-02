@@ -1,10 +1,10 @@
 trigger:
   branches:
     include:
-      - master
+      - streamlabs
   tags:
     include:
-      - v*
+      - '*'
 
 variables:
   BuildDirectory: build
