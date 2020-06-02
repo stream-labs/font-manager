@@ -11,7 +11,6 @@ variables:
   Generator: Visual Studio 15 2017 Win64
   DistributeDirectory: distribute
   FullDistributePath: $(BuildDirectory)\$(DistributeDirectory)
-  DistributionAritfact: $(RuntimeName)-$(RuntimeVersion)-font-manager
   RuntimeURL: https://atom.io/download/atom-shell
   RuntimeName: iojs
   RuntimeVersion: v6.0.3
@@ -29,6 +28,9 @@ jobs:
 
   - checkout: self
     fetchDepth: 10
+
+  - powershell: 'Write-Host "##vso[task.setvariable variable=tagartifact]font-manager-$((git.exe describe --tags --abbrev=0) | Out-String)"'
+    displayName: 'Get tag for artifact'
 
   - task: NodeTool@0
     displayName: 'Install Node'
@@ -51,21 +53,23 @@ jobs:
       includeRootFolder: true
       archiveType: tar
       tarCompression: gz
-      archiveFile: '$(DistributionAritfact).tar.gz'
+      archiveFile: '$(tagartifact)-win64.tar.gz'
 
   - task: PublishBuildArtifacts@1
     displayName: 'Publish build artifact'
     inputs: 
-      pathtoPublish: $(Build.SourcesDirectory)\$(DistributionAritfact).tar.gz
-      artifactName: $(DistributionAritfact).tar.gz
+      pathtoPublish: $(Build.SourcesDirectory)\$(tagartifact)-win64.tar.gz
+      artifactName: $(tagartifact)-win64.tar.gz
 
-  - task: GithubRelease@0 
-    displayName: 'Deploy to GitHub'
-    condition: and(succeeded(), contains(variables['Build.SourceBranch'], 'tags'))  
+  - task: S3Upload@1
     inputs:
-      gitHubConnection: stream-labs_deploy
-      repositoryName: stream-labs/font-manager
-      assets: $(Build.SourcesDirectory)/$(DistributionAritfact).tar.gz
+      awsCredentials: 'SLOBS_BE_AWS'
+      regionName: 'us-west-2'
+      bucketName: 'slobs-font-manager'
+      globExpressions: '$(tagartifact)-win64.tar.gz'
+      filesAcl: 'public-read'
+    displayName: 'Upload tag artifact to S3'
+    condition: and(succeeded(), contains(variables['Build.SourceBranch'], 'tags'))
 
 - job: 'MacOSX'
   pool:
@@ -79,6 +83,9 @@ jobs:
 
   - checkout: self
     fetchDepth: 10
+
+  - powershell: 'Write-Host "##vso[task.setvariable variable=tagartifact]node-fontinfo-$((git describe --tags --abbrev=0) | Out-String)"'
+    displayName: 'Get tag for artifact'
 
   - task: NodeTool@0
     displayName: 'Install Node'
@@ -103,13 +110,15 @@ jobs:
   - task: PublishBuildArtifacts@1
     displayName: 'Publish build artifact'
     inputs: 
-      pathtoPublish: $(Build.SourcesDirectory)/$(DistributionAritfact)-osx.tar.gz
-      artifactName: $(DistributionAritfact)-osx.tar.gz
+      pathtoPublish: $(Build.SourcesDirectory)/$(tagartifact)-osx.tar.gz
+      artifactName: $(tagartifact)-osx.tar.gz
 
-  - task: GithubRelease@0 
-    displayName: 'Deploy to GitHub'
-    condition: and(succeeded(), contains(variables['Build.SourceBranch'], 'tags'))  
+  - task: S3Upload@1
     inputs:
-      gitHubConnection: stream-labs_deploy
-      repositoryName: stream-labs/font-manager
-      assets: $(Build.SourcesDirectory)/$(DistributionAritfact)-osx.tar.gz
+      awsCredentials: 'SLOBS_BE_AWS'
+      regionName: 'us-west-2'
+      bucketName: 'slobs-font-manager'
+      globExpressions: '$(tagartifact)-osx.tar.gz'
+      filesAcl: 'public-read'
+    displayName: 'Upload tag artifact to S3'
+    condition: and(succeeded(), contains(variables['Build.SourceBranch'], 'tags'))
