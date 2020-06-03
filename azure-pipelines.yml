@@ -1,71 +1,124 @@
 trigger:
   branches:
     include:
-      - master
+      - streamlabs
   tags:
     include:
-      - v*
-
-workspace:
-  clean: all
-
-strategy:
-  matrix:
-    Electron5:
-      RuntimeURL: https://atom.io/download/atom-shell
-      RuntimeName: iojs
-      RuntimeVersion: v6.0.3
-
-pool:
-  vmImage: 'vs2017-win2016'
+      - '*'
 
 variables:
   BuildDirectory: build
   Generator: Visual Studio 15 2017 Win64
   DistributeDirectory: distribute
   FullDistributePath: $(BuildDirectory)\$(DistributeDirectory)
-  DistributionAritfact: $(RuntimeName)-$(RuntimeVersion)-font-manager
+  RuntimeURL: https://atom.io/download/atom-shell
+  RuntimeName: iojs
+  RuntimeVersion: v6.0.3
 
-steps:
-- powershell: git config --global core.autocrlf false
-  displayName: 'Set Unix checkout for git'
+jobs:
+- job: 'Windows'
+  pool:
+    vmImage: 'vs2017-win2016'
+  workspace:
+    clean: all
 
-- checkout: self
-  fetchDepth: 10
+  steps:
+  - powershell: git config --global core.autocrlf false
+    displayName: 'Set Unix checkout for git'
 
-- task: NodeTool@0
-  displayName: 'Install Node'
-  inputs:
-    versionSpec: '10.x'
+  - checkout: self
+    fetchDepth: 10
 
-- script: 'yarn install'
-  displayName: 'Install dependencies'
+  - powershell: 'Write-Host "##vso[task.setvariable variable=tagartifact]font-manager-$((git.exe describe --tags --abbrev=0) | Out-String)"'
+    displayName: 'Get tag for artifact'
 
-- script: 'cmake -H. -B"%BuildDirectory%" -G"%Generator%"  -DCMAKE_INSTALL_PREFIX="%FullDistributePath%\font-manager" -DNODEJS_NAME=%RuntimeName% -DNODEJS_URL=%RuntimeURL% -DNODEJS_VERSION=%RuntimeVersion%'
-  displayName: 'Configure font-manager'
+  - task: NodeTool@0
+    displayName: 'Install Node'
+    inputs:
+      versionSpec: '10.x'
 
-- script: 'cmake --build %BuildDirectory% --target install --config RelWithDebInfo'
-  displayName: 'Build font-manager'
+  - script: 'yarn install'
+    displayName: 'Install dependencies'
 
-- task: ArchiveFiles@2
-  displayName: 'Generate artifact'
-  inputs:
-    rootFolderOrFile: $(FullDistributePath)\font-manager
-    includeRootFolder: true
-    archiveType: tar
-    tarCompression: gz
-    archiveFile: '$(DistributionAritfact).tar.gz'
+  - script: 'cmake -H. -B"%BuildDirectory%" -G"%Generator%"  -DCMAKE_INSTALL_PREFIX="%FullDistributePath%\font-manager" -DNODEJS_NAME=%RuntimeName% -DNODEJS_URL=%RuntimeURL% -DNODEJS_VERSION=%RuntimeVersion%'
+    displayName: 'Configure font-manager'
 
-- task: PublishBuildArtifacts@1
-  displayName: 'Publish build artifact'
-  inputs: 
-    pathtoPublish: $(Build.SourcesDirectory)\$(DistributionAritfact).tar.gz
-    artifactName: $(DistributionAritfact).tar.gz
+  - script: 'cmake --build %BuildDirectory% --target install --config RelWithDebInfo'
+    displayName: 'Build font-manager'
 
-- task: GithubRelease@0 
-  displayName: 'Deploy to GitHub'
-  condition: and(succeeded(), contains(variables['Build.SourceBranch'], 'tags'))  
-  inputs:
-    gitHubConnection: stream-labs_deploy
-    repositoryName: stream-labs/font-manager
-    assets: $(Build.SourcesDirectory)/$(DistributionAritfact).tar.gz
+  - task: ArchiveFiles@2
+    displayName: 'Generate artifact'
+    inputs:
+      rootFolderOrFile: $(FullDistributePath)\font-manager
+      includeRootFolder: true
+      archiveType: tar
+      tarCompression: gz
+      archiveFile: '$(tagartifact)-win64.tar.gz'
+
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish build artifact'
+    inputs: 
+      pathtoPublish: $(Build.SourcesDirectory)\$(tagartifact)-win64.tar.gz
+      artifactName: $(tagartifact)-win64.tar.gz
+
+  - task: S3Upload@1
+    inputs:
+      awsCredentials: 'SLOBS_BE_AWS'
+      regionName: 'us-west-2'
+      bucketName: 'slobs-font-manager'
+      globExpressions: '$(tagartifact)-win64.tar.gz'
+      filesAcl: 'public-read'
+    displayName: 'Upload tag artifact to S3'
+    condition: and(succeeded(), contains(variables['Build.SourceBranch'], 'tags'))
+
+- job: 'MacOSX'
+  pool:
+    vmImage: 'macos-10.15'
+  workspace:
+    clean: all
+
+  steps:
+  - powershell: git config --global core.autocrlf false
+    displayName: 'Set Unix checkout for git'
+
+  - checkout: self
+    fetchDepth: 10
+
+  - powershell: 'Write-Host "##vso[task.setvariable variable=tagartifact]node-fontinfo-$((git describe --tags --abbrev=0) | Out-String)"'
+    displayName: 'Get tag for artifact'
+
+  - task: NodeTool@0
+    displayName: 'Install Node'
+    inputs:
+      versionSpec: '10.x'
+
+  - script: 'yarn install'
+    displayName: 'Install dependencies'
+
+  - script: './ci/build-osx.sh'
+    displayName: 'Build font-manager'
+
+  - task: ArchiveFiles@2
+    displayName: 'Generate artifact'
+    inputs:
+      rootFolderOrFile: build/distribute/font-manager
+      includeRootFolder: true
+      archiveType: tar
+      tarCompression: gz
+      archiveFile: '$(tagartifact)-osx.tar.gz'
+
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish build artifact'
+    inputs: 
+      pathtoPublish: $(Build.SourcesDirectory)/$(tagartifact)-osx.tar.gz
+      artifactName: $(tagartifact)-osx.tar.gz
+
+  - task: S3Upload@1
+    inputs:
+      awsCredentials: 'SLOBS_BE_AWS'
+      regionName: 'us-west-2'
+      bucketName: 'slobs-font-manager'
+      globExpressions: '$(tagartifact)-osx.tar.gz'
+      filesAcl: 'public-read'
+    displayName: 'Upload tag artifact to S3'
+    condition: and(succeeded(), contains(variables['Build.SourceBranch'], 'tags'))

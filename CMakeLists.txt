@@ -38,9 +38,14 @@ elseif(APPLE)
 	target_sources(node_fontmanager
 		PUBLIC ${node_fontmanager_SOURCE_DIR}/src/FontManagerMac.mm)
 
+	find_library(COREFOUNDATION CoreFoundation)
+	find_library(CORETEXT CoreText)
+	include_directories(${COREFOUNDATION}
+		    ${CORETEXT})
+
 	target_link_libraries(node_fontmanager
-		CoreText.framework
-		Foundation.framework)
+		${CORETEXT}
+		${COREFOUNDATION})
 elseif(UNIX)
 	target_sources(node_fontmanager
 		PUBLIC ${node_fontmanager_SOURCE_DIR}/src/FontManagerLinux.mm)
@@ -48,6 +53,9 @@ elseif(UNIX)
 	target_link_libraries(node_fontmanager fontconfig)
 endif()
 
-install(FILES $<TARGET_PDB_FILE:node_fontmanager> DESTINATION . OPTIONAL)
+if(WIN32)
+	install(FILES $<TARGET_PDB_FILE:node_fontmanager> DESTINATION . OPTIONAL)
+endif()
+
 install(FILES $<TARGET_FILE:node_fontmanager> DESTINATION .)
 install(FILES ${node_fontmanager_EXTRAS} DESTINATION .)

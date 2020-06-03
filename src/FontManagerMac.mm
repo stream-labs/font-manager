@@ -57,6 +57,7 @@ FontDescriptor *createFontDescriptor(CTFontDescriptorRef descriptor) {
     weight,
     width,
     (symbolicTraits & kCTFontItalicTrait) != 0,
+    false,
     (symbolicTraits & kCTFontMonoSpaceTrait) != 0
   );
     
