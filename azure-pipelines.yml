@@ -84,7 +84,7 @@ jobs:
   - checkout: self
     fetchDepth: 10
 
-  - powershell: 'Write-Host "##vso[task.setvariable variable=tagartifact]node-fontinfo-$((git describe --tags --abbrev=0) | Out-String)"'
+  - powershell: 'Write-Host "##vso[task.setvariable variable=tagartifact]font-manager-$((git describe --tags --abbrev=0) | Out-String)"'
     displayName: 'Get tag for artifact'
 
   - task: NodeTool@0
