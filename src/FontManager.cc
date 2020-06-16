@@ -20,7 +20,7 @@ Local<Array> collectResults(ResultSet *results) {
 
   int i = 0;
   for (ResultSet::iterator it = results->begin(); it != results->end(); it++) {
-    res->Set(i++, (*it)->toJSObject());
+    res->Set(v8::Isolate::GetCurrent()->GetCurrentContext(), i++, (*it)->toJSObject());
   }
 
   delete results;
@@ -221,4 +221,4 @@ NAN_MODULE_INIT(Init) {
   Nan::Export(target, "substituteFontSync", substituteFont<false>);
 }
 
-NODE_MODULE(node_fontmanager, Init)
+NAN_MODULE_WORKER_ENABLED(node_fontmanager, Init)

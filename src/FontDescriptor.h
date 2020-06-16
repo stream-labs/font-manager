@@ -117,15 +117,15 @@ public:
   Local<Object> toJSObject() {
     Nan::EscapableHandleScope scope;
     Local<Object> res = Nan::New<Object>();
-    res->Set(Nan::New<String>("path").ToLocalChecked(), Nan::New<String>(path).ToLocalChecked());
-    res->Set(Nan::New<String>("postscriptName").ToLocalChecked(), Nan::New<String>(postscriptName).ToLocalChecked());
-    res->Set(Nan::New<String>("family").ToLocalChecked(), Nan::New<String>(family).ToLocalChecked());
-    res->Set(Nan::New<String>("style").ToLocalChecked(), Nan::New<String>(style).ToLocalChecked());
-    res->Set(Nan::New<String>("weight").ToLocalChecked(), Nan::New<Number>(weight));
-    res->Set(Nan::New<String>("width").ToLocalChecked(), Nan::New<Number>(width));
-    res->Set(Nan::New<String>("italic").ToLocalChecked(), Nan::New<v8::Boolean>(italic));
-    res->Set(Nan::New<String>("oblique").ToLocalChecked(), Nan::New<v8::Boolean>(oblique));
-    res->Set(Nan::New<String>("monospace").ToLocalChecked(), Nan::New<v8::Boolean>(monospace));
+    res->Set(v8::Isolate::GetCurrent()->GetCurrentContext(), Nan::New<String>("path").ToLocalChecked(), Nan::New<String>(path).ToLocalChecked());
+    res->Set(v8::Isolate::GetCurrent()->GetCurrentContext(), Nan::New<String>("postscriptName").ToLocalChecked(), Nan::New<String>(postscriptName).ToLocalChecked());
+    res->Set(v8::Isolate::GetCurrent()->GetCurrentContext(), Nan::New<String>("family").ToLocalChecked(), Nan::New<String>(family).ToLocalChecked());
+    res->Set(v8::Isolate::GetCurrent()->GetCurrentContext(), Nan::New<String>("style").ToLocalChecked(), Nan::New<String>(style).ToLocalChecked());
+    res->Set(v8::Isolate::GetCurrent()->GetCurrentContext(), Nan::New<String>("weight").ToLocalChecked(), Nan::New<Number>(weight));
+    res->Set(v8::Isolate::GetCurrent()->GetCurrentContext(), Nan::New<String>("width").ToLocalChecked(), Nan::New<Number>(width));
+    res->Set(v8::Isolate::GetCurrent()->GetCurrentContext(), Nan::New<String>("italic").ToLocalChecked(), Nan::New<v8::Boolean>(italic));
+    res->Set(v8::Isolate::GetCurrent()->GetCurrentContext(), Nan::New<String>("oblique").ToLocalChecked(), Nan::New<v8::Boolean>(oblique));
+    res->Set(v8::Isolate::GetCurrent()->GetCurrentContext(), Nan::New<String>("monospace").ToLocalChecked(), Nan::New<v8::Boolean>(monospace));
     return scope.Escape(res);
   }
   
@@ -141,7 +141,7 @@ private:
   
   char *getString(Local<Object> obj, const char *name) {
     Nan::HandleScope scope;
-    Local<Value> value = obj->Get(Nan::New<String>(name).ToLocalChecked());
+    Local<Value> value = obj->Get(v8::Isolate::GetCurrent()->GetCurrentContext(), Nan::New<String>(name).ToLocalChecked()).ToLocalChecked();
     
     if (value->IsString()) {
       return copyString(*Nan::Utf8String(value));
@@ -152,10 +152,10 @@ private:
   
   int getNumber(Local<Object> obj, const char *name) {
     Nan::HandleScope scope;
-    Local<Value> value = obj->Get(Nan::New<String>(name).ToLocalChecked());
+    Local<Value> value = obj->Get(v8::Isolate::GetCurrent()->GetCurrentContext(), Nan::New<String>(name).ToLocalChecked()).ToLocalChecked();
     
     if (value->IsNumber()) {
-      return value->Int32Value();
+      return value->Int32Value(v8::Isolate::GetCurrent()->GetCurrentContext()).ToChecked();
     }
     
     return 0;
@@ -163,10 +163,10 @@ private:
   
   bool getBool(Local<Object> obj, const char *name) {
     Nan::HandleScope scope;
-    Local<Value> value = obj->Get(Nan::New<String>(name).ToLocalChecked());
+    Local<Value> value = obj->Get(v8::Isolate::GetCurrent()->GetCurrentContext(), Nan::New<String>(name).ToLocalChecked()).ToLocalChecked();
     
     if (value->IsBoolean()) {
-      return value->BooleanValue();
+      return value->BooleanValue(v8::Isolate::GetCurrent());
     }
     
     return false;
