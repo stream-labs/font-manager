@@ -4,8 +4,12 @@
   "description": "Provides access to the system font catalog",
   "main": "main.js",
   "devDependencies": {
+    "colors": "^1.4.0",
+    "fs": "^0.0.1-security",
+    "mocha": "*",
     "nan": "2.14.0",
-    "mocha": "*"
+    "path": "^0.12.7",
+    "shelljs": "^0.8.4"
   },
   "keywords": [
     "font",
