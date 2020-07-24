@@ -48,7 +48,7 @@ elseif(APPLE)
 		${COREFOUNDATION})
 elseif(UNIX)
 	target_sources(node_fontmanager
-		PUBLIC ${node_fontmanager_SOURCE_DIR}/src/FontManagerLinux.mm)
+		PUBLIC ${node_fontmanager_SOURCE_DIR}/src/FontManagerLinux.cc)
 
 	target_link_libraries(node_fontmanager fontconfig)
 endif()
