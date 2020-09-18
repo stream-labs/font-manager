@@ -13,13 +13,26 @@ include(CPack)
 
 nodejs_init()
 
+# Include N-API wrappers
+execute_process(COMMAND node -p "require('node-addon-api').include"
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+        OUTPUT_VARIABLE NODE_ADDON_API_DIR
+        )
+string(REPLACE "\n" "" NODE_ADDON_API_DIR ${NODE_ADDON_API_DIR})
+string(REPLACE "\"" "" NODE_ADDON_API_DIR ${NODE_ADDON_API_DIR})
+
+# list(APPEND PROJECT_INCLUDE_PATHS ${NODE_ADDON_API_DIR})
+
+# Define NAPI_VERSION
+add_definitions(-DNAPI_VERSION=4)
+
 add_nodejs_module(node_fontmanager
 	${node_fontmanager_SOURCE_DIR}/src/FontDescriptor.h
 	${node_fontmanager_SOURCE_DIR}/src/FontManager.cc
 	${NODEJS_SOURCES})
 
 target_link_libraries(node_fontmanager ${NODEJS_LIBRARIES})
-target_include_directories(node_fontmanager PUBLIC ${NODEJS_INCLUDE_DIRS})
+target_include_directories(node_fontmanager PUBLIC ${NODEJS_INCLUDE_DIRS} ${NODE_ADDON_API_DIR})
 
 set(node_fontmanager_EXTRAS
 	${node_fontmanager_SOURCE_DIR}/main.js
