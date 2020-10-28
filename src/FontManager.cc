@@ -1,10 +1,8 @@
 #include <stdlib.h>
-// #include <node.h>
-// #include <uv.h>
-// #include <v8.h>
-// #include <nan.h>
 #include <napi.h>
 #include "FontDescriptor.h"
+
+#include <iostream>
 
 // using namespace v8;
 
@@ -105,21 +103,37 @@ Napi::Object wrapResult(napi_env env, FontDescriptor *result) {
 //   req->results = getAvailableFonts();
 // }
 
+Napi::ThreadSafeFunction napi_thread;
+std::thread *worker_thread = nullptr;
+
+void worker() {
+  auto callback = []( Napi::Env env, 
+    Napi::Function jsCallback) {
+    jsCallback.Call({ collectResults(env, getAvailableFonts()) });
+  };
+
+  napi_thread.NonBlockingCall( callback );
+}
+
+void FinalizerCallback(Napi::Env env) {
+  if (worker_thread && worker_thread->joinable())
+    worker_thread->join();
+}
+
 template<bool async>
-// NAN_METHOD(getAvailableFonts) {
 Napi::Value getAvailableFonts(const Napi::CallbackInfo& info) {
-  // if (async) {
-  //   if (info.Length() < 1 || !info[0]->IsFunction())
-  //     return Nan::ThrowTypeError("Expected a callback");
-
-  //   AsyncRequest *req = new AsyncRequest(info[0]);
-  //   uv_queue_work(uv_default_loop(), &req->work, getAvailableFontsAsync, (uv_after_work_cb) asyncCallback);
-
-  //   return;
-  // } else {
-  //   info.GetReturnValue().Set(collectResults(getAvailableFonts()));
-  // }
-  return collectResults(info.Env(), getAvailableFonts());
+  if (async) {
+    napi_thread = Napi::ThreadSafeFunction::New(info.Env(),
+                              info[0].As<Napi::Function>(),
+                              "getAvailableFonts",
+                              0,
+                              1,
+                              FinalizerCallback);
+    worker_thread = new std::thread(&worker);
+    return info.Env().Undefined();
+  } else {
+    return collectResults(info.Env(), getAvailableFonts());
+  }
 }
 
 // void findFontsAsync(uv_work_t *work) {
@@ -223,17 +237,6 @@ Napi::Value substituteFont(const Napi::CallbackInfo& info) {
   return wrapResult(info.Env(), substituteFont((char*)info[0].ToString().Utf8Value().c_str(), (char*)info[1].ToString().Utf8Value().c_str()));
   // }
 }
-
-// NAN_MODULE_INIT(Init) {
-//   Nan::Export(target, "getAvailableFonts", getAvailableFonts<true>);
-//   Nan::Export(target, "getAvailableFontsSync", getAvailableFonts<false>);
-//   Nan::Export(target, "findFonts", findFonts<true>);
-//   Nan::Export(target, "findFontsSync", findFonts<false>);
-//   Nan::Export(target, "findFont", findFont<true>);
-//   Nan::Export(target, "findFontSync", findFont<false>);
-//   Nan::Export(target, "substituteFont", substituteFont<true>);
-//   Nan::Export(target, "substituteFontSync", substituteFont<false>);
-// }
 
 void Init(Napi::Env env, Napi::Object exports)
 {
