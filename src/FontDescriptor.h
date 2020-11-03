@@ -133,40 +133,6 @@ private:
     strcpy(str, input);
     return str;
   }
-  
-  // char *getString(napi_env env, Napi::Object obj, const char *name) {
-  //   // Nan::HandleScope scope;
-  //   // Local<Value> value = obj->Get(Nan::New<String>(name).ToLocalChecked());
-  //   Napi::String value = Napi::String::New(env, name);
-    
-  //   if (value.IsString()) {
-  //     return value.Utf8Value().c_str();
-  //   }
-  
-  //   return NULL;
-  // }
-  
-  // int getNumber(Local<Object> obj, const char *name) {
-  //   Nan::HandleScope scope;
-  //   Local<Value> value = obj->Get(Nan::New<String>(name).ToLocalChecked());
-    
-  //   if (value->IsNumber()) {
-  //     return value->Int32Value();
-  //   }
-    
-  //   return 0;
-  // }
-  
-  // bool getBool(Local<Object> obj, const char *name) {
-  //   Nan::HandleScope scope;
-  //   Local<Value> value = obj->Get(Nan::New<String>(name).ToLocalChecked());
-    
-  //   if (value->IsBoolean()) {
-  //     return value->BooleanValue();
-  //   }
-    
-  //   return false;
-  // }
 };
 
 class ResultSet : public std::vector<FontDescriptor *> {

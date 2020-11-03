@@ -4,8 +4,6 @@
 
 #include <iostream>
 
-// using namespace v8;
-
 // these functions are implemented by the platform
 ResultSet *getAvailableFonts();
 ResultSet *findFonts(FontDescriptor *);
@@ -14,9 +12,6 @@ FontDescriptor *substituteFont(char *, char *);
 
 // converts a ResultSet to a JavaScript array
 Napi::Array collectResults(napi_env env, ResultSet *results) {
-  // Nan::EscapableHandleScope scope;
-  // Local<Array> res = Nan::New<Array>(results->size());
-
   Napi::Array res = Napi::Array::New(env, results->size());
   int i = 0;
   for (ResultSet::iterator it = results->begin(); it != results->end(); it++) {
@@ -25,21 +20,17 @@ Napi::Array collectResults(napi_env env, ResultSet *results) {
 
   delete results;
   return res;
-  // return scope.Escape(res);
 }
 
 // converts a FontDescriptor to a JavaScript object
 Napi::Object wrapResult(napi_env env, FontDescriptor *result) {
-  // Nan::EscapableHandleScope scope;
+  Napi::EscapableHandleScope scope(env);
   if (result == NULL)
     return Napi::Object::New(env);
-    // return scope.Escape(Nan::Null());
 
-  // Local<Object> res = result->toJSObject();
   Napi::Object res = result->toJSObject(env);
   delete result;
   return res;
-  // return scope.Escape(res);
 }
 
 // holds data about an operation that will be
@@ -123,6 +114,9 @@ void FinalizerCallback(Napi::Env env) {
 template<bool async>
 Napi::Value getAvailableFonts(const Napi::CallbackInfo& info) {
   if (async) {
+    if (worker_thread && worker_thread->joinable())
+      worker_thread->join();
+
     napi_thread = Napi::ThreadSafeFunction::New(info.Env(),
                               info[0].As<Napi::Function>(),
                               "getAvailableFonts",
