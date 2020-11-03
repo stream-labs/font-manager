@@ -3,6 +3,7 @@
 #include "FontDescriptor.h"
 
 #include <iostream>
+#include <thread>
 
 // these functions are implemented by the platform
 ResultSet *getAvailableFonts();
@@ -106,11 +107,6 @@ void worker() {
   napi_thread.NonBlockingCall( callback );
 }
 
-void FinalizerCallback(Napi::Env env) {
-  if (worker_thread && worker_thread->joinable())
-    worker_thread->join();
-}
-
 template<bool async>
 Napi::Value getAvailableFonts(const Napi::CallbackInfo& info) {
   if (async) {
@@ -122,7 +118,10 @@ Napi::Value getAvailableFonts(const Napi::CallbackInfo& info) {
                               "getAvailableFonts",
                               0,
                               1,
-                              FinalizerCallback);
+                              [] (Napi::Env) {
+                                if (worker_thread && worker_thread->joinable())
+                                  worker_thread->join();
+                              });
     worker_thread = new std::thread(&worker);
     return info.Env().Undefined();
   } else {
