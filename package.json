@@ -7,7 +7,6 @@
     "colors": "^1.4.0",
     "fs": "^0.0.1-security",
     "mocha": "*",
-    "nan": "2.14.0",
     "path": "^0.12.7",
     "shelljs": "^0.8.4"
   },
@@ -18,5 +17,8 @@
     "substitute",
     "enumerate"
   ],
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "node-addon-api": "^3.0.0"
+  }
 }

@@ -1,13 +1,9 @@
 #ifndef FONT_DESCRIPTOR_H
 #define FONT_DESCRIPTOR_H
-#include <node.h>
-#include <v8.h>
-#include <nan.h>
+#include <napi.h>
 #include <stdlib.h>
 #include <string.h>
 #include <vector>
-
-using namespace v8;
 
 enum FontWeight {
   FontWeightUndefined   = 0,
@@ -47,16 +43,16 @@ public:
   bool oblique;
   bool monospace;
   
-  FontDescriptor(Local<Object> obj) {
+  FontDescriptor(Napi::Object obj) {
     path = NULL;
-    postscriptName = getString(obj, "postscriptName");
-    family = getString(obj, "family");
-    style = getString(obj, "style");
-    weight = (FontWeight) getNumber(obj, "weight");
-    width = (FontWidth) getNumber(obj, "width");
-    italic = getBool(obj, "italic");
-    oblique = getBool(obj, "oblique");
-    monospace = getBool(obj, "monospace");
+    postscriptName = obj.Get("postscriptName").ToString().Utf8Value().c_str();
+    family = obj.Get("family").ToString().Utf8Value().c_str();
+    style = obj.Get("style").ToString().Utf8Value().c_str();
+    weight = (FontWeight) obj.Get("weight").ToNumber().Int64Value();
+    width = (FontWidth) obj.Get("width").ToNumber().Int64Value();
+    italic = obj.Get("italic").ToBoolean().Value();
+    oblique = obj.Get("oblique").ToBoolean().Value();
+    monospace = obj.Get("monospace").ToBoolean().Value();
   }
 
   FontDescriptor() {
@@ -114,19 +110,18 @@ public:
     style = NULL;
   }
   
-  Local<Object> toJSObject() {
-    Nan::EscapableHandleScope scope;
-    Local<Object> res = Nan::New<Object>();
-    res->Set(Nan::New<String>("path").ToLocalChecked(), Nan::New<String>(path).ToLocalChecked());
-    res->Set(Nan::New<String>("postscriptName").ToLocalChecked(), Nan::New<String>(postscriptName).ToLocalChecked());
-    res->Set(Nan::New<String>("family").ToLocalChecked(), Nan::New<String>(family).ToLocalChecked());
-    res->Set(Nan::New<String>("style").ToLocalChecked(), Nan::New<String>(style).ToLocalChecked());
-    res->Set(Nan::New<String>("weight").ToLocalChecked(), Nan::New<Number>(weight));
-    res->Set(Nan::New<String>("width").ToLocalChecked(), Nan::New<Number>(width));
-    res->Set(Nan::New<String>("italic").ToLocalChecked(), Nan::New<v8::Boolean>(italic));
-    res->Set(Nan::New<String>("oblique").ToLocalChecked(), Nan::New<v8::Boolean>(oblique));
-    res->Set(Nan::New<String>("monospace").ToLocalChecked(), Nan::New<v8::Boolean>(monospace));
-    return scope.Escape(res);
+  Napi::Object toJSObject(napi_env env) {
+    Napi::Object res = Napi::Object::New(env);
+    res.Set("path", Napi::String::New(env, path));
+    res.Set("postscriptName", Napi::String::New(env, postscriptName));
+    res.Set("family", Napi::String::New(env, family));
+    res.Set("style", Napi::String::New(env, style));
+    res.Set("weight", Napi::Number::New(env, weight));
+    res.Set("width", Napi::Number::New(env, width));
+    res.Set("italic", Napi::Boolean::New(env, italic));
+    res.Set("oblique", Napi::Boolean::New(env, oblique));
+    res.Set("monospace", Napi::Boolean::New(env, monospace));
+    return res;
   }
   
 private:
@@ -137,39 +132,6 @@ private:
     char *str = new char[strlen(input) + 1];
     strcpy(str, input);
     return str;
-  }
-  
-  char *getString(Local<Object> obj, const char *name) {
-    Nan::HandleScope scope;
-    Local<Value> value = obj->Get(Nan::New<String>(name).ToLocalChecked());
-    
-    if (value->IsString()) {
-      return copyString(*Nan::Utf8String(value));
-    }
-  
-    return NULL;
-  }
-  
-  int getNumber(Local<Object> obj, const char *name) {
-    Nan::HandleScope scope;
-    Local<Value> value = obj->Get(Nan::New<String>(name).ToLocalChecked());
-    
-    if (value->IsNumber()) {
-      return value->Int32Value();
-    }
-    
-    return 0;
-  }
-  
-  bool getBool(Local<Object> obj, const char *name) {
-    Nan::HandleScope scope;
-    Local<Value> value = obj->Get(Nan::New<String>(name).ToLocalChecked());
-    
-    if (value->IsBoolean()) {
-      return value->BooleanValue();
-    }
-    
-    return false;
   }
 };
 
